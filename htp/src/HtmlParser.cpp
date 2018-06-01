@@ -11,14 +11,33 @@
 #include <iostream>
 #include <algorithm>
 
+#include "StateMachine/State.h"
+#include "StateMachine/IdleState.h"
+
 using namespace std;
 
-string lowercase(string &&any)
+inline string lowercase(string &&any)
 {
 	string tmp = move(any);
 	transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
 	return tmp;
 }
+
+inline std::string trim(const std::string &s)
+{
+   auto wsfront=std::find_if_not(s.begin(),s.end(),[](int c){return std::isspace(c);});
+   auto wsback=std::find_if_not(s.rbegin(),s.rend(),[](int c){return std::isspace(c);}).base();
+   return (wsback<=wsfront ? std::string() : std::string(wsfront,wsback));
+}
+
+inline bool emptyOrBlank(const std::string &s)
+{
+   auto wsfront=std::find_if_not(s.begin(),s.end(),[](int c){
+	   return std::isspace(c);
+   });
+   return wsfront == s.end();
+}
+
 
 HtmlParser::HtmlParser(const std::string &path)
 : ifs(path)
@@ -27,7 +46,6 @@ HtmlParser::HtmlParser(const std::string &path)
 ,TagRegex("<\\s*(\\w*)[^>]*>")
 ,EndRegex("<\\s*/\\s*(\\w*)[^>]*>")
 {
-	currentParagraph = Parsed.end();
 }
 
 void HtmlParser::quickParse()
@@ -38,7 +56,7 @@ void HtmlParser::quickParse()
 	int Start;
 
 	while (!ifs.eof()) {
-		Buf += ifs.get();		// brute force
+		Buf += ifs.get();		// there are a lot of smarter solutions on the net, but I doubt, that they are faster
 	}
 	s = Buf;
 	next = 0;
@@ -67,15 +85,98 @@ void HtmlParser::quickParse()
 		s = m.suffix().str();
 	}
 	Parsed.merge(End);
-	currentParagraph = Parsed.begin();
+	list<Node>::iterator t,n;
+	t = Parsed.begin();
+	while (t != Parsed.end()) {
+		n = t++;
+		if (n->isEnd()) n->setLastPosition(n->start() + n->raw().length());
+		else if (t == Parsed.end()) n->setLastPosition(Buf.length());
+		else n->setLastPosition(t->start());
+	}
+}
+
+const unsigned int TabLength = 8;
+
+pair<unsigned long, unsigned long> HtmlParser::getRowCol(unsigned long pos)
+{
+	unsigned long row = 1, col = 1;
+
+	for (unsigned int i = 0; i < pos; i++) {
+		if (i >= Buf.length()) break;
+		if (Buf[i] == '\n') {
+			col = 1;
+			++row;
+		} else if (Buf[i] == '\t'){
+			col += 8;
+		} else {
+			++col;
+		}
+	}
+	return pair<unsigned long, unsigned long>(row,col);
+}
+
+/**
+ * structurize
+ * Structurizes the 'Parsed' list, i.e. combines paragraphs with embedded elements and creates new nodes for untagged text in the body.
+ *
+ * Returns false, if no body can be found. Combining the paragraphs has been done by then.
+ */
+bool HtmlParser::structurize()
+{
+	Context ctx(Idle);
+
+	for(auto n = Parsed.begin(); n != Parsed.end(); ++n) {
+		IState *cs = ctx.getCurrentState()->handleState(ctx,n);
+		ctx.changeState(cs);
+	}
+
+	// erase all the duplicates after iteration, because they could have been used in NodeStack
+	ctx.doErase(Parsed);
+
+	auto p = find_if(Parsed.begin(),Parsed.end(), [&](Node &n) -> bool {
+		return n.getTyp() == NodeType::body;
+	});
+	if (p == Parsed.end()) return false;
+
+	p->forAllChildrenThat(Node::hasChildren, [&](Node &n, int unused) {
+		unsigned long content = n.start() + n.raw().length();
+		for (auto pp=n.nested().begin(); pp!=n.nested().end(); ++pp ) {
+			if (pp->shallBePrinted()) {
+				string tmp = Buf.substr(content, pp->start()-content);
+				if (!emptyOrBlank(tmp)) {
+					auto pos = getRowCol(content);
+					auto epos = getRowCol(pp->start());
+					cout << "line " << pos.first << ", char " << pos.second << " to " << epos.first << ", " << epos.second << ": " << tmp << endl;
+	/*				Node nn(NodeType::text, content, move(tmp), false);
+					nn.setLastPosition(content + nn.raw().length());
+					n.nested.insert(pp, nn);*/
+				}
+				//cout << "Examining from " << content << ", length " << pp->start() - content << endl;
+			}
+			content = pp->getOverallEnd();
+		}
+	});
+
+	return true;
 }
 
 void HtmlParser::print()
 {
+	std::list<Node>::iterator rec;
+
 	for_each(Parsed.begin(),Parsed.end(), [&] (Node &p) {
 		cout << (const string&) p;
 		if (debug) cout << " " << p.raw();
 		cout << endl;
+		if (debug) {
+			p.forAllChildrenThat(Node::always,[&](Node &t, int level) {
+				for (int i=0; i<level; i++) cout << "-> ";
+				auto pos = getRowCol(t.start());
+				auto epos = getRowCol(t.getLastPosition());
+				cout << (const string&) t << "(" << pos.first << ", " << pos.second
+						<< " - " << epos.first << ", " << epos.second << ")" << endl;
+			});
+		}
 	});
 }
 
@@ -84,17 +185,17 @@ bool HtmlParser::eof()
 	return ifs.eof();
 }
 
-bool HtmlParser::getHeaderOrParagraph(string &result)
+bool HtmlParser::getExtractedText(string &result)
 {
 	result = "";
-	while (currentParagraph != Parsed.end()) {
-		if (currentParagraph->getTyp() == NodeType::p || currentParagraph->getTyp() == NodeType::h) {
-			result = currentParagraph->completeNode(Buf, currentParagraph, Parsed.end());
-			return true;
-		} else {
-			++currentParagraph;
-		}
-	}
+	auto p = find_if(Parsed.begin(),Parsed.end(), [&](Node &n) -> bool {
+		return n.getTyp() == NodeType::body;
+	});
+	if (p == Parsed.end()) return false;
+
+	p->forAllChildrenThat(Node::isPrintable, [&](Node &t, int level){
+		t.extractText(result, Buf);
+	});
 	return false;
 }
 

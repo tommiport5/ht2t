@@ -23,9 +23,12 @@ class HtmlParser {
 	// created by a "quick parse"
 	std::list<Node> End;
 	std::list<Node> Parsed;
-	std::list<Node>::const_iterator currentParagraph;
+	//std::list<Node>::const_iterator currentParagraph;
 
-	bool findHeaderOrParagraph();
+	std::pair<unsigned long, unsigned long> getRowCol(unsigned long pos);
+
+	std::list<Node *> NodeStack;
+	std::list<std::list<Node>::iterator> ToErase;
 
 	bool debug;
 
@@ -38,8 +41,9 @@ public:
 
 	bool eof();
 	void quickParse();
+	bool structurize();
+	bool getExtractedText(std::string &result);
 	void print();
-	bool getHeaderOrParagraph(std::string &result);
 };
 
 #endif /* HTMLPARSER_H_ */
