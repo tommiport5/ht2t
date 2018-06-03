@@ -67,6 +67,7 @@ void traverse(DIR *p, const string &name)
 
 int main(int argc, char *argv[]) {
 	string ExtractedText;
+	bool end;
 	//DIR *pDir;
 
 /*
@@ -81,10 +82,13 @@ int main(int argc, char *argv[]) {
 	HtmlParser htp("/home/dad/port5/port5.de/index.html");
 	htp.quickParse();
 	htp.structurize();
-	htp.print();
+	//htp.print();
+	//htp.printET();
 
-	//htp.getExtractedText(ExtractedText);
-	//cout << ExtractedText << endl;
+	htp.startExtracting();
+	while (htp.getExtractedText(ExtractedText)) {
+			cout << ExtractedText;
+	}
 
 	return 0;
 }

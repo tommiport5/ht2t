@@ -40,6 +40,7 @@ public:
 	void setRaw(const std::string &r) {_raw = r;};
 	void makeEnd(bool is) {_isEnd = is;};
 
+	bool printsANewline();
 	bool shallBePrinted();
 
 	static bool hasChildren(Node &n) {return !n._nested.empty();};

@@ -42,37 +42,6 @@ const string NodeType::UnknownString = "unknown";
 const string NodeType::HString = "h";
 const string NodeType::TextString = "text";
 
-const NodeType::H NodeType::_Hnd[] = {
-		NodeType::embed, 	//a,
-		NodeType::embed, 	//b,
-		NodeType::stop,		//body,
-		NodeType::embed, 	//br,
-		NodeType::embed, 	//button,
-		NodeType::discard,	//col,
-		NodeType::stop,		//div,
-		NodeType::stop,		//form,
-		NodeType::stop,		//h,
-		NodeType::stop,		//head,
-		NodeType::stop,		//html,
-		NodeType::embed,	//i,
-		NodeType::embed,	//img,
-		NodeType::discard,	//li,
-		NodeType::discard,	//meta,
-		NodeType::skip,		//option,
-		NodeType::stop,		//p,
-		NodeType::skip,		//script,
-		NodeType::stop,		//span,
-		NodeType::skip,		//table,
-		NodeType::discard,	//td,
-		NodeType::discard,	//th,
-		NodeType::discard,	//tr,
-		NodeType::discard,	//title,
-		NodeType::embed,	//u,
-		NodeType::discard,	//ul,
-		NodeType::discard,	//unknown,
-		NodeType::stop,		//text
-};
-
 NodeType::NodeType(const std::string &s)
 {
 	auto it = NTab.find(s.c_str());

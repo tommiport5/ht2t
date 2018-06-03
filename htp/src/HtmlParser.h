@@ -13,6 +13,7 @@
 #include <regex>
 
 #include "Node.h"
+#include "Filter.h"
 
 class HtmlParser {
 	std::ifstream ifs;
@@ -23,6 +24,8 @@ class HtmlParser {
 	// created by a "quick parse"
 	std::list<Node> End;
 	std::list<Node> Parsed;
+	std::list<Node> Texts;
+	std::list<Node>::iterator Current;
 	//std::list<Node>::const_iterator currentParagraph;
 
 	std::pair<unsigned long, unsigned long> getRowCol(unsigned long pos);
@@ -35,6 +38,8 @@ class HtmlParser {
 	std::regex TagRegex;
 	std::regex EndRegex;
 
+	Filter Fil;
+
 public:
 	HtmlParser(const std::string &path);
 	virtual ~HtmlParser();
@@ -42,8 +47,10 @@ public:
 	bool eof();
 	void quickParse();
 	bool structurize();
-	bool getExtractedText(std::string &result);
 	void print();
+	void printET();
+	void startExtracting() {Current = Texts.begin();Fil.reset();};
+	bool getExtractedText(std::string &result);
 };
 
 #endif /* HTMLPARSER_H_ */

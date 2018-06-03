@@ -85,14 +85,6 @@ void HtmlParser::quickParse()
 		s = m.suffix().str();
 	}
 	Parsed.merge(End);
-	list<Node>::iterator t,n;
-	t = Parsed.begin();
-	while (t != Parsed.end()) {
-		n = t++;
-		if (n->isEnd()) n->setLastPosition(n->start() + n->raw().length());
-		else if (t == Parsed.end()) n->setLastPosition(Buf.length());
-		else n->setLastPosition(t->start());
-	}
 }
 
 const unsigned int TabLength = 8;
@@ -129,7 +121,6 @@ bool HtmlParser::structurize()
 		IState *cs = ctx.getCurrentState()->handleState(ctx,n);
 		ctx.changeState(cs);
 	}
-
 	// erase all the duplicates after iteration, because they could have been used in NodeStack
 	ctx.doErase(Parsed);
 
@@ -144,19 +135,22 @@ bool HtmlParser::structurize()
 			if (pp->shallBePrinted()) {
 				string tmp = Buf.substr(content, pp->start()-content);
 				if (!emptyOrBlank(tmp)) {
-					auto pos = getRowCol(content);
+/*					auto pos = getRowCol(content);
 					auto epos = getRowCol(pp->start());
-					cout << "line " << pos.first << ", char " << pos.second << " to " << epos.first << ", " << epos.second << ": " << tmp << endl;
-	/*				Node nn(NodeType::text, content, move(tmp), false);
-					nn.setLastPosition(content + nn.raw().length());
-					n.nested.insert(pp, nn);*/
+					cout << "line " << pos.first << ", char " << pos.second << " to " << epos.first << ", " << epos.second << ": " << tmp << endl;*/
+					Node nn(NodeType::text, content, move(tmp), false);
+					Texts.push_back(move(nn));
 				}
-				//cout << "Examining from " << content << ", length " << pp->start() - content << endl;
+			}
+			if (pp->printsANewline()) {
+					Texts.push_back(*pp);
 			}
 			content = pp->getOverallEnd();
 		}
 	});
-
+	Texts.sort([](const Node &f,  const Node &s) -> bool {
+		return f.start() < s.start();
+	});
 	return true;
 }
 
@@ -180,6 +174,16 @@ void HtmlParser::print()
 	});
 }
 
+void HtmlParser::printET()
+{
+	for_each(Texts.begin(),Texts.end(), [&] (Node &p) {
+		auto pos = getRowCol(p.start());
+		auto epos = getRowCol(p.getLastPosition());
+		cout << (const string&) p << "(" << pos.first << ", " << pos.second
+				<< " - " << epos.first << ", " << epos.second << ")" << endl;
+	});
+}
+
 bool HtmlParser::eof()
 {
 	return ifs.eof();
@@ -187,16 +191,15 @@ bool HtmlParser::eof()
 
 bool HtmlParser::getExtractedText(string &result)
 {
-	result = "";
-	auto p = find_if(Parsed.begin(),Parsed.end(), [&](Node &n) -> bool {
-		return n.getTyp() == NodeType::body;
-	});
-	if (p == Parsed.end()) return false;
-
-	p->forAllChildrenThat(Node::isPrintable, [&](Node &t, int level){
-		t.extractText(result, Buf);
-	});
-	return false;
+	if (Current == Texts.end())return false;
+	result.clear();
+	if (Current->getTyp() == NodeType::text) {
+		Fil.preprocess(Current->raw().begin(), Current->raw().end(), &result);
+	} else {
+		result = "\n";
+	}
+	++Current;
+	return true;
 }
 
 HtmlParser::~HtmlParser()
