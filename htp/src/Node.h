@@ -46,7 +46,6 @@ public:
 	static bool hasChildren(Node &n) {return !n._nested.empty();};
 	static bool always(Node &) {return true;};
 	static bool isPrintable(Node &);
-	//static void insertBackground(Node &);
 
 	unsigned long getOverallEnd();
 	Node* embed(std::list<Node>::iterator p);

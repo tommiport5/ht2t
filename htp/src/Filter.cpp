@@ -18,6 +18,9 @@ using namespace std;
 const map<string, string> EntityTable = {
 		{"&quot;", u8"\""},
 		{"&amp;", u8"&"},
+		{"&lt;", u8"<"},
+		{"&gt;", u8">"},
+		{"&apos;", u8"'"},
 		{"&auml;", u8"ä"},
 		{"&ouml;", u8"ö"},
 		{"&uuml;", u8"ü"},

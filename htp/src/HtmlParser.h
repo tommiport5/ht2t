@@ -16,17 +16,19 @@
 #include "Filter.h"
 
 class HtmlParser {
-	std::ifstream ifs;
 
 	std::string Buf;
 
+	void findExpressions(std::regex &pat, std::list<Node> &res, bool findsEnd);
+	void findMetas() {findExpressions(MetaRegex, Metas, false);};
+
 	// "machine readable" version of the HTML string
 	// created by a "quick parse"
-	std::list<Node> End;
+	std::list<Node> Ends;
 	std::list<Node> Parsed;
 	std::list<Node> Texts;
+	std::list<Node> Metas;
 	std::list<Node>::iterator Current;
-	//std::list<Node>::const_iterator currentParagraph;
 
 	std::pair<unsigned long, unsigned long> getRowCol(unsigned long pos);
 
@@ -37,14 +39,18 @@ class HtmlParser {
 
 	std::regex TagRegex;
 	std::regex EndRegex;
+	std::regex MetaRegex;
 
 	Filter Fil;
+
+	std::string InputCharset;
 
 public:
 	HtmlParser(const std::string &path);
 	virtual ~HtmlParser();
 
-	bool eof();
+	std::string &readCharset();
+	bool convert2UTF_8();
 	void quickParse();
 	bool structurize();
 	void print();

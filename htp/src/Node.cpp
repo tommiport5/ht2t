@@ -54,17 +54,6 @@ Node::operator const string () const
 }
 
 /**
- * printsANewline
- * identifies a Node that is to be copied into the Texts lists, where it causes a newline in the printout
- */
-bool Node::printsANewline()
-{
-	bool ret = (getTyp() == NodeType::p && isEnd()) ||
-				(getTyp() == NodeType::h && isEnd());
-	return ret;
-}
-
-/**
  * shallBePrinted
  * used to filter out unwanted nodes
  * this is a method that can be applied to a node as opposed to isPrintable below, which is a predicate for use in forAllChildrenThat
@@ -78,6 +67,17 @@ bool Node::shallBePrinted()
 bool Node::isPrintable(Node &n)
 {
 	return n.getTyp() == NodeType::text;
+}
+
+/**
+ * printsANewline
+ * identifies a Node that is to be copied into the Texts lists, where it causes a newline in the printout
+ */
+bool Node::printsANewline()
+{
+	bool ret = (getTyp() == NodeType::p && isEnd()) ||
+				(getTyp() == NodeType::h && isEnd());
+	return ret;
 }
 
 /**

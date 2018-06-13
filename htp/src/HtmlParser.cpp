@@ -10,6 +10,7 @@
 #include <cctype>
 #include <iostream>
 #include <algorithm>
+#include <iconv.h>
 
 #include "StateMachine/State.h"
 #include "StateMachine/IdleState.h"
@@ -40,51 +41,97 @@ inline bool emptyOrBlank(const std::string &s)
 
 
 HtmlParser::HtmlParser(const std::string &path)
-: ifs(path)
-, Buf()
-, debug(true)
+: debug(true)
 ,TagRegex("<\\s*(\\w*)[^>]*>")
 ,EndRegex("<\\s*/\\s*(\\w*)[^>]*>")
+,MetaRegex("<\\s*(meta)\\s*[^>]*>", regex_constants::ECMAScript | regex_constants::icase)
+,InputCharset("")
 {
+	ifstream ifs(path);
+	stringstream buffer;
+	buffer << ifs.rdbuf();
+	Buf = buffer.str();
 }
 
-void HtmlParser::quickParse()
+/**
+ * findExpressions
+ * Parses the buffer for the given expression and creates nodes from them.
+ * The nodes are inserted in the list res.
+ * The caller has to tell us here, if the expression finds an end tag.
+ */
+void HtmlParser::findExpressions(std::regex &pat, std::list<Node> &res, bool findsEnd)
 {
 	smatch m;
 	string s;
 	int next;
 	int Start;
 
-	while (!ifs.eof()) {
-		Buf += ifs.get();		// there are a lot of smarter solutions on the net, but I doubt, that they are faster
-	}
 	s = Buf;
 	next = 0;
-	while (regex_search(s, m, TagRegex)) {
+	while (regex_search(s, m, pat)) {
 		if (m[1].length() > 0) {
 			Start =  next + m.position();
-			Parsed.push_back(Node(
+			res.push_back(Node(
 					lowercase(Buf.substr(next + m.position(1), m[1].length())),
-					Start, m.str(),false)
+					Start, m.str(),findsEnd)
 					);
 		}
 		next += m.position() + m[0].length();
 		s = m.suffix().str();
 	}
-	s = Buf;
-	next = 0;
-	while (regex_search(s, m, EndRegex)) {
-		if (m[1].length() > 0) {
-			Start =  next + m.position();
-			End.push_back(Node(
-					lowercase(Buf.substr(next + m.position(1), m[1].length())),
-					Start, m.str(),true)
-					);
-		}
-		next += m.position() + m[0].length();
-		s = m.suffix().str();
+}
+
+std::string &HtmlParser::readCharset()
+{
+	if (InputCharset.empty()) {
+		regex cs("charset=\"?([^\">]*)", regex_constants::ECMAScript | regex_constants::icase);
+
+		findMetas();
+		find_if(Metas.begin(), Metas.end(),[&](Node n){
+			smatch m;
+			if (regex_search(n.raw(), m, cs)) {
+				InputCharset = m[1];
+				return true;
+			}
+			return false;
+		});
 	}
-	Parsed.merge(End);
+	return InputCharset;
+}
+
+bool HtmlParser::convert2UTF_8()
+{
+	iconv_t idesc;
+	size_t InLen = Buf.length();
+	size_t OutLen = 2*InLen;	// should be enough
+	const char *fromBuf = Buf.c_str();
+	char **pFrom = const_cast<char **>(&fromBuf);
+
+	readCharset();
+
+	if ((InputCharset == "utf-8") || InputCharset.empty()) return true;
+
+	idesc = iconv_open("utf-8", InputCharset.c_str());
+	if (idesc == (iconv_t)-1) return false;
+	char *toBuf = new char[OutLen];
+	char **pTo = &toBuf;
+	char *saveTo = toBuf;	//
+	size_t res = iconv(idesc, pFrom, &InLen, pTo, &OutLen);
+	if (res != (size_t)-1) {
+		string tmp(saveTo);
+		Buf.swap(tmp);
+	}
+	delete []saveTo;
+	iconv_close(idesc);
+	return res != (size_t) -1;
+}
+
+
+void HtmlParser::quickParse()
+{
+	findExpressions(TagRegex,Parsed, false);
+	findExpressions(EndRegex,Ends,true);
+	Parsed.merge(Ends);
 }
 
 const unsigned int TabLength = 8;
@@ -184,11 +231,6 @@ void HtmlParser::printET()
 	});
 }
 
-bool HtmlParser::eof()
-{
-	return ifs.eof();
-}
-
 bool HtmlParser::getExtractedText(string &result)
 {
 	if (Current == Texts.end())return false;
@@ -204,6 +246,5 @@ bool HtmlParser::getExtractedText(string &result)
 
 HtmlParser::~HtmlParser()
 {
-	ifs.close();
 }
 

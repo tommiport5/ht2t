@@ -40,6 +40,19 @@ void processFile(struct dirent *dname, const string &dir)
 	if (ext == ".jpg") return;
 	if (ext == ".png") return;
 	cout << dir << '/' << dname->d_name << endl;
+	if (ext == ".html" || ext == ".htm") {
+		string ExtractedText;
+
+		HtmlParser htp(dir + "/" + dname->d_name);
+		cout << htp.readCharset() << endl;
+		htp.quickParse();
+		htp.structurize();
+
+		htp.startExtracting();
+		while (htp.getExtractedText(ExtractedText)) {
+				cout << ExtractedText;
+		}
+	}
 }
 
 void traverse(DIR *p, const string &name)
@@ -66,20 +79,20 @@ void traverse(DIR *p, const string &name)
 }
 
 int main(int argc, char *argv[]) {
-	string ExtractedText;
-	bool end;
-	//DIR *pDir;
+/*	DIR *pDir;
 
-/*
 	pDir = opendir(argv[1]);
 	if (!pDir) {
 		cerr << "Could not open directory " << argv[1] << endl;
 		return 1;
 	}
 	traverse(pDir, argv[1]);
-	closedir(pDir);
-*/
-	HtmlParser htp("/home/dad/port5/port5.de/index.html");
+	closedir(pDir);*/
+	string ExtractedText;
+	HtmlParser htp(argv[1]);
+	cout << htp.readCharset();
+	if (htp.convert2UTF_8()) cout << " converted" << endl;
+	else cout << " could not convert" << endl;
 	htp.quickParse();
 	htp.structurize();
 	//htp.print();
