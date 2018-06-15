@@ -44,9 +44,10 @@ class HtmlParser {
 	Filter Fil;
 
 	std::string InputCharset;
+	std::ostream &out;
 
 public:
-	HtmlParser(const std::string &path);
+	HtmlParser(std::istream &In, std::ostream &Out, bool Verb);
 	virtual ~HtmlParser();
 
 	std::string &readCharset();

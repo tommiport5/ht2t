@@ -40,17 +40,22 @@ inline bool emptyOrBlank(const std::string &s)
 }
 
 
-HtmlParser::HtmlParser(const std::string &path)
-: debug(true)
+HtmlParser::HtmlParser(std::istream &In, std::ostream &Out, bool Verb)
+: debug(Verb)
 ,TagRegex("<\\s*(\\w*)[^>]*>")
 ,EndRegex("<\\s*/\\s*(\\w*)[^>]*>")
 ,MetaRegex("<\\s*(meta)\\s*[^>]*>", regex_constants::ECMAScript | regex_constants::icase)
 ,InputCharset("")
+,out(Out)
 {
-	ifstream ifs(path);
-	stringstream buffer;
-	buffer << ifs.rdbuf();
-	Buf = buffer.str();
+//	not possible with istream, maybe do something with read
+//	ifstream ifs(path);
+//	stringstream buffer;
+//	buffer << ifs.rdbuf();
+//	Buf = buffer.str();
+	while (!In.eof()) {
+		Buf += In.get();
+	}
 }
 
 /**
@@ -184,7 +189,7 @@ bool HtmlParser::structurize()
 				if (!emptyOrBlank(tmp)) {
 /*					auto pos = getRowCol(content);
 					auto epos = getRowCol(pp->start());
-					cout << "line " << pos.first << ", char " << pos.second << " to " << epos.first << ", " << epos.second << ": " << tmp << endl;*/
+					out << "line " << pos.first << ", char " << pos.second << " to " << epos.first << ", " << epos.second << ": " << tmp << endl;*/
 					Node nn(NodeType::text, content, move(tmp), false);
 					Texts.push_back(move(nn));
 				}
@@ -206,15 +211,15 @@ void HtmlParser::print()
 	std::list<Node>::iterator rec;
 
 	for_each(Parsed.begin(),Parsed.end(), [&] (Node &p) {
-		cout << (const string&) p;
-		if (debug) cout << " " << p.raw();
-		cout << endl;
+		out << (const string&) p;
+		if (debug) out << " " << p.raw();
+		out << endl;
 		if (debug) {
 			p.forAllChildrenThat(Node::always,[&](Node &t, int level) {
-				for (int i=0; i<level; i++) cout << "-> ";
+				for (int i=0; i<level; i++) out << "-> ";
 				auto pos = getRowCol(t.start());
 				auto epos = getRowCol(t.getLastPosition());
-				cout << (const string&) t << "(" << pos.first << ", " << pos.second
+				out << (const string&) t << "(" << pos.first << ", " << pos.second
 						<< " - " << epos.first << ", " << epos.second << ")" << endl;
 			});
 		}
@@ -226,7 +231,7 @@ void HtmlParser::printET()
 	for_each(Texts.begin(),Texts.end(), [&] (Node &p) {
 		auto pos = getRowCol(p.start());
 		auto epos = getRowCol(p.getLastPosition());
-		cout << (const string&) p << "(" << pos.first << ", " << pos.second
+		out << (const string&) p << "(" << pos.first << ", " << pos.second
 				<< " - " << epos.first << ", " << epos.second << ")" << endl;
 	});
 }
