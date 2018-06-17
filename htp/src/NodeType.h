@@ -13,7 +13,8 @@
 
 class NodeType {
 public:
-	enum T {a, b, body, br, button, col, div, form, h, head, html, i, img, li, meta, option, p, script, span, table, td, th, tr, title, u, ul, unknown, text};
+	enum T {a, b, body, br, button, col, comment, div, form, h, head, html, i, img, li, meta, noscript,
+		option, p, script, span, style, table, td, th, tr, title, u, ul, unknown, text};
 	enum H {stop, embed, discard, skip};
 	NodeType(const std::string &s);
 	NodeType(const NodeType &rhs): _Typ(rhs._Typ) {};

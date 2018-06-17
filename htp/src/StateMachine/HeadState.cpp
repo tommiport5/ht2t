@@ -9,7 +9,7 @@
 
 #include "IdleState.h"
 #include "BodyState.h"
-#include "ScriptState.h"
+#include "IgnoredNTStates.h"
 
 HeadState Head;
 

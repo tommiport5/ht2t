@@ -20,14 +20,13 @@ class HtmlParser {
 	std::string Buf;
 
 	void findExpressions(std::regex &pat, std::list<Node> &res, bool findsEnd);
-	void findMetas() {findExpressions(MetaRegex, Metas, false);};
+	void findMetas() {Temp.clear(); findExpressions(MetaRegex, Temp, false);};
 
 	// "machine readable" version of the HTML string
 	// created by a "quick parse"
-	std::list<Node> Ends;
+	std::list<Node> Temp;
 	std::list<Node> Parsed;
 	std::list<Node> Texts;
-	std::list<Node> Metas;
 	std::list<Node>::iterator Current;
 
 	std::pair<unsigned long, unsigned long> getRowCol(unsigned long pos);
@@ -40,6 +39,7 @@ class HtmlParser {
 	std::regex TagRegex;
 	std::regex EndRegex;
 	std::regex MetaRegex;
+	std::regex CommentRegex;
 
 	Filter Fil;
 

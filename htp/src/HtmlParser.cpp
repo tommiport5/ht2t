@@ -45,6 +45,7 @@ HtmlParser::HtmlParser(std::istream &In, std::ostream &Out, bool Verb)
 ,TagRegex("<\\s*(\\w*)[^>]*>")
 ,EndRegex("<\\s*/\\s*(\\w*)[^>]*>")
 ,MetaRegex("<\\s*(meta)\\s*[^>]*>", regex_constants::ECMAScript | regex_constants::icase)
+,CommentRegex("<\\s*(!--)[^>]*>", regex_constants::ECMAScript | regex_constants::icase)
 ,InputCharset("")
 ,out(Out)
 {
@@ -92,7 +93,7 @@ std::string &HtmlParser::readCharset()
 		regex cs("charset=\"?([^\">]*)", regex_constants::ECMAScript | regex_constants::icase);
 
 		findMetas();
-		find_if(Metas.begin(), Metas.end(),[&](Node n){
+		find_if(Temp.begin(), Temp.end(),[&](Node n){
 			smatch m;
 			if (regex_search(n.raw(), m, cs)) {
 				InputCharset = m[1];
@@ -135,8 +136,12 @@ bool HtmlParser::convert2UTF_8()
 void HtmlParser::quickParse()
 {
 	findExpressions(TagRegex,Parsed, false);
-	findExpressions(EndRegex,Ends,true);
-	Parsed.merge(Ends);
+	Temp.clear();
+	findExpressions(EndRegex,Temp,true);
+	Parsed.merge(Temp);
+	//Temp.clear(); already removed by merge
+	findExpressions(CommentRegex,Temp,true);
+	Parsed.merge(Temp);
 }
 
 const unsigned int TabLength = 8;
@@ -182,22 +187,22 @@ bool HtmlParser::structurize()
 	if (p == Parsed.end()) return false;
 
 	p->forAllChildrenThat(Node::hasChildren, [&](Node &n, int unused) {
-		unsigned long content = n.start() + n.raw().length();
-		for (auto pp=n.nested().begin(); pp!=n.nested().end(); ++pp ) {
-			if (pp->shallBePrinted()) {
-				string tmp = Buf.substr(content, pp->start()-content);
-				if (!emptyOrBlank(tmp)) {
-/*					auto pos = getRowCol(content);
-					auto epos = getRowCol(pp->start());
-					out << "line " << pos.first << ", char " << pos.second << " to " << epos.first << ", " << epos.second << ": " << tmp << endl;*/
-					Node nn(NodeType::text, content, move(tmp), false);
-					Texts.push_back(move(nn));
+		if (n.shallBePrinted()) {
+			unsigned long content = n.start() + n.raw().length();
+			for (auto pp=n.nested().begin(); pp!=n.nested().end(); ++pp ) {
+					string tmp = Buf.substr(content, pp->start()-content);
+					if (!emptyOrBlank(tmp)) {
+	/*					auto pos = getRowCol(content);
+						auto epos = getRowCol(pp->start());
+						out << "line " << pos.first << ", char " << pos.second << " to " << epos.first << ", " << epos.second << ": " << tmp << endl;*/
+						Node nn(NodeType::text, content, move(tmp), false);
+						Texts.push_back(move(nn));
+					}
+				if (pp->printsANewline()) {
+						Texts.push_back(*pp);
 				}
+				content = pp->getOverallEnd();
 			}
-			if (pp->printsANewline()) {
-					Texts.push_back(*pp);
-			}
-			content = pp->getOverallEnd();
 		}
 	});
 	Texts.sort([](const Node &f,  const Node &s) -> bool {

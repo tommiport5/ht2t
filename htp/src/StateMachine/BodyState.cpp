@@ -10,7 +10,7 @@
 #include "IdleState.h"
 #include "DivState.h"
 #include "PState.h"
-#include "ScriptState.h"
+#include "IgnoredNTStates.h"
 
 BodyState Body;
 

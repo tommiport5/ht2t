@@ -5,16 +5,16 @@
  *      Author: dad
  */
 
-#include "ScriptState.h"
+#include "IgnoredNTStates.h"
 
 ScriptState Script;
 
-IState *ScriptState::handleState(Context& ctx, std::list<Node>::iterator event)
+IState *IgnoredNTState::handleState(Context& ctx, std::list<Node>::iterator event)
 {
-	IState *state = &Script;
+	IState *state = this;
 
 	ctx.topOfStack()->embed(event);
-	if (event->getTyp() == NodeType::script){
+	if (event->getTyp() == nt.Typ()){
 		if (event->isEnd()) {
 			ctx.pop();
 			state = ctx.getStateFromNode(ctx.topOfStack());
