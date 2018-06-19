@@ -186,19 +186,17 @@ bool HtmlParser::structurize()
 	});
 	if (p == Parsed.end()) return false;
 
+	Texts.clear();
 	p->forAllChildrenThat(Node::hasChildren, [&](Node &n, int unused) {
 		if (n.shallBePrinted()) {
 			unsigned long content = n.start() + n.raw().length();
 			for (auto pp=n.nested().begin(); pp!=n.nested().end(); ++pp ) {
 					string tmp = Buf.substr(content, pp->start()-content);
 					if (!emptyOrBlank(tmp)) {
-	/*					auto pos = getRowCol(content);
-						auto epos = getRowCol(pp->start());
-						out << "line " << pos.first << ", char " << pos.second << " to " << epos.first << ", " << epos.second << ": " << tmp << endl;*/
 						Node nn(NodeType::text, content, move(tmp), false);
 						Texts.push_back(move(nn));
 					}
-				if (pp->printsANewline()) {
+				if (pp->printsANewline() || pp->printsABlank()) {
 						Texts.push_back(*pp);
 				}
 				content = pp->getOverallEnd();
@@ -247,8 +245,10 @@ bool HtmlParser::getExtractedText(string &result)
 	result.clear();
 	if (Current->getTyp() == NodeType::text) {
 		Fil.preprocess(Current->raw().begin(), Current->raw().end(), &result);
-	} else {
+	} else if (Current->printsANewline()) {
 		result = "\n";
+	} else if (Current->printsABlank()) {
+		result = " ";
 	}
 	++Current;
 	return true;

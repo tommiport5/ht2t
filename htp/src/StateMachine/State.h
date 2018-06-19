@@ -21,6 +21,14 @@ public:
 	virtual IState *handleState(Context &ctx, std::list<Node>::iterator event) = 0;
 };
 
+// common operation for all states:
+class State : public IState {
+public:
+	IState *pushAndChange(Context &ctx, std::list<Node>::iterator event, IState *newState);
+	IState *popAndChange(Context &ctx, std::list<Node>::iterator event);
+	IState *embedAndContinue(Context &ctx, std::list<Node>::iterator event);
+};
+
 class Context {
 	std::list<std::list<Node>::iterator> ToErase;
 	std::list<Node *> NodeStack;

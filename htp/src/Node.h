@@ -41,6 +41,7 @@ public:
 	void makeEnd(bool is) {_isEnd = is;};
 
 	bool printsANewline();
+	bool printsABlank();
 	bool shallBePrinted();
 
 	static bool hasChildren(Node &n) {return !n._nested.empty();};

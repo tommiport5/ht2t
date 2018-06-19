@@ -13,13 +13,14 @@
 class Filter {
 	std::string *_o;
 	std::string ent;
+	char tmp[16];
 
 	enum PPState {neutral, entity, lf, blank};
 	PPState ppstate;
 
 
 	void prp(char c);
-	const std::string &lookupEntity(const std::string &ent);
+	const std::string &lookupEntity(const std::string &enty);
 
 public:
 	virtual ~Filter();

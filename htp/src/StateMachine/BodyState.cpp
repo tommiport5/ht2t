@@ -18,30 +18,32 @@ BodyState Body;
 
 IState *BodyState::handleState(Context& ctx, std::list<Node>::iterator event)
 {
-	IState *state = &Body;
-
-	if (event->getTyp() == NodeType::html) {
-		// premature
+	switch (event->getTyp()) {
+	case NodeType::html:
+		// </body> missing
 		ctx.pop();
 		return &Idle;
+	case NodeType::div:
+		return pushAndChange(ctx, event, &Div);
+	case NodeType::p:
+		return pushAndChange(ctx, event, &P);
+	case NodeType::script:
+		return pushAndChange(ctx, event, &Script);
+	case NodeType::style:
+		return pushAndChange(ctx, event, &Style);
+	case NodeType::table:
+		return pushAndChange(ctx, event, &Table);
+	case NodeType::body:
+		if (event->isEnd()) {
+			ctx.topOfStack()->embed(event);
+			ctx.eraseDelayed(event);
+			ctx.pop();
+			return &Idle;
+		} else {
+			// illegal: nested body
+			return embedAndContinue(ctx, event);
+		}
+	default:
+		return embedAndContinue(ctx, event);
 	}
-	Node *emb = ctx.topOfStack()->embed(event);
-	if (event->getTyp() == NodeType::div) {
-		ctx.push(emb);
-		state = &Div;
-	}
-	if (event->getTyp() == NodeType::p) {
-		ctx.push(emb);
-		state = &P;
-	}
-	if (event->getTyp() == NodeType::script) {
-		ctx.push(emb);
-		state = &Script;
-	}
-	if (event->getTyp() == NodeType::body && event->isEnd()) {
-		ctx.pop();
-		state = &Idle;
-	}
-	ctx.eraseDelayed(event);
-	return state;
 }

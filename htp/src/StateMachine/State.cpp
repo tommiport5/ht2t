@@ -18,6 +18,32 @@
 
 Node UnknownNode = {NodeType(NodeType::unknown),0,"",false};
 
+
+IState* State::pushAndChange(Context& ctx, std::list<Node>::iterator event,
+		IState* newState)
+{
+	Node *emb = ctx.topOfStack()->embed(event);
+	ctx.push(emb);
+	ctx.eraseDelayed(event);
+	return newState;
+}
+
+IState* State::popAndChange(Context& ctx, std::list<Node>::iterator event)
+{
+	ctx.topOfStack()->embed(event);
+	ctx.pop();
+	ctx.eraseDelayed(event);
+	return ctx.getStateFromNode(ctx.topOfStack());
+}
+
+
+IState* State::embedAndContinue(Context& ctx, std::list<Node>::iterator event)
+{
+	ctx.topOfStack()->embed(event);
+	ctx.eraseDelayed(event);
+	return this;
+}
+
 void Context::push(Node *node)
 {
 	NodeStack.push_front(node);
@@ -74,8 +100,6 @@ void Context::doErase(std::list<Node> prs)
 	});
 	ToErase.clear();
 }
-
-
 /*
 int StackSize = NodeStack.size();
 if (StackSize) {

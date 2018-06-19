@@ -8,6 +8,8 @@
 #include "IgnoredNTStates.h"
 
 ScriptState Script;
+StyleState Style;
+TableState Table;
 
 IState *IgnoredNTState::handleState(Context& ctx, std::list<Node>::iterator event)
 {

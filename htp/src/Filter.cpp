@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <functional>
 #include <cctype>
+#include <cstdlib>
+#include <cstring>
 #include <map>
 
 using namespace std;
@@ -27,6 +29,10 @@ const map<string, string> EntityTable = {
 		{"&Auml;", u8"Ä"},
 		{"&Ouml;", u8"Ö"},
 		{"&Uuml;", u8"Ü"},
+		{"&nbsp;", u8" "},
+		{"&deg;", u8"°"},
+		{"&hellip;", u8"..."},
+		{"&copy;", u8"©"}
 };
 
 Filter::~Filter() {
@@ -60,6 +66,10 @@ void Filter::prp(char c)
 			*_o += lookupEntity(ent);
 			ppstate = neutral;
 		}
+		if (isspace(c)) {
+			*_o += ent;
+			ppstate = isblank(c) ? blank : lf;
+		}
 		break;
 	case blank:
 	case lf:
@@ -81,12 +91,29 @@ void Filter::reset()
 	ppstate = neutral;
 }
 
-const std::string& Filter::lookupEntity(const std::string& ent)
+const std::string& Filter::lookupEntity(const std::string& enty)
 {
-	try {
-		return EntityTable.at(ent);
-	} catch (const out_of_range) {
+	union {long l; char c[sizeof(long)];} cres;
+	if (enty[1] == '#') {
+		if (tolower(enty[2] == 'x')) {
+			cres.l = strtol(enty.c_str() + 2, NULL, 16);
+		} else {
+			cres.l = strtol(enty.c_str() + 2, NULL, 10);
+		}
+		ent.clear();
+		bool found = false;
+		for (char *p = &cres.c[sizeof(long)-1]; p >= &cres.c[0]; --p) {
+			if (found || *p != '\0') {
+				ent += *p;
+				found = true;
+			}
+		}
 		return ent;
+	}
+	try {
+		return EntityTable.at(enty);
+	} catch (const out_of_range) {
+		return enty;
 	}
 }
 

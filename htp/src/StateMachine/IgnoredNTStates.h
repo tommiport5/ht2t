@@ -11,7 +11,7 @@
 #include "State.h"
 #include "../NodeType.h"
 
-class IgnoredNTState: public IState {
+class IgnoredNTState: public State {
 public:
 	virtual IState *handleState(Context &ctx, std::list<Node>::iterator event);
 protected:
@@ -28,6 +28,18 @@ public:
 
 extern ScriptState Script;
 
+class StyleState : public IgnoredNTState {
+public:
+	StyleState() : IgnoredNTState(NodeType::style) {};
+};
 
+extern StyleState Style;
+
+class TableState : public IgnoredNTState {
+public:
+	TableState() : IgnoredNTState(NodeType::table) {};
+};
+
+extern TableState Table;
 
 #endif /* SCRIPTSTATE_H_ */

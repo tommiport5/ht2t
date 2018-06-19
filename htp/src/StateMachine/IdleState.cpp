@@ -15,6 +15,22 @@ IdleState Idle;
 
 IState *IdleState::handleState(Context &ctx, std::list<Node>::iterator event)
 {
+	switch (event->getTyp()) {
+	case NodeType::head:
+		ctx.push(&*event);
+		return &Head;
+	case NodeType::body:
+		ctx.push(&*event);
+		return &Body;
+	case NodeType::script:
+		ctx.push(&*event);
+		ctx.eraseDelayed(event);
+		return &Script;
+	default:
+		return &Idle;
+	}
+
+/*
 	if (event->getTyp() == NodeType::head) {
 		ctx.push(&*event);
 		return &Head;
@@ -29,4 +45,5 @@ IState *IdleState::handleState(Context &ctx, std::list<Node>::iterator event)
 		return &Script;
 	}
 	return &Idle;
+*/
 }

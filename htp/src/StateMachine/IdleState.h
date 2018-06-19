@@ -10,7 +10,7 @@
 
 #include "State.h"
 
-class IdleState: public IState {
+class IdleState: public State {
 public:
 	virtual IState *handleState(Context &ctx, std::list<Node>::iterator event);
 };

@@ -11,19 +11,20 @@ AState A;
 
 IState *AState::handleState(Context& ctx, std::list<Node>::iterator event)
 {
-	IState *state = &A;
-	Node *emb = ctx.topOfStack()->embed(event);
-	if (event->getTyp() == NodeType::a) {
-		if (event->isEnd()) {
-			ctx.pop();
-			state = ctx.getStateFromNode(ctx.topOfStack());
-		} else {
-			// </p> missing
+	switch (event->getTyp()) {
+	case NodeType::a:
+		if (event->isEnd())
+			return popAndChange(ctx, event);
+		else {
+			// </a> missing
+			Node *emb = ctx.topOfStack()->embed(event);
+			ctx.eraseDelayed(event);
 			ctx.pop();
 			ctx.push(emb);
 			// state remains the same
+			return this;
 		}
+	default:
+		return embedAndContinue(ctx, event);
 	}
-	ctx.eraseDelayed(event);
-	return state;
 }

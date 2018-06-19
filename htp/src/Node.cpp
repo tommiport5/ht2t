@@ -60,8 +60,14 @@ Node::operator const string () const
  */
 bool Node::shallBePrinted()
 {
-	// more not printables will come
-	return getTyp() != NodeType::script;
+	switch (getTyp()) {
+	case NodeType::script:
+	case NodeType::style:
+	case NodeType::table:
+		return false;
+	default:
+		return true;
+	}
 }
 
 bool Node::isPrintable(Node &n)
@@ -76,7 +82,16 @@ bool Node::isPrintable(Node &n)
 bool Node::printsANewline()
 {
 	bool ret = (getTyp() == NodeType::p && isEnd()) ||
-				(getTyp() == NodeType::h && isEnd());
+				(getTyp() == NodeType::h && isEnd())||
+				(getTyp() == NodeType::li && isEnd());
+	return ret;
+}
+
+
+bool Node::printsABlank()
+{
+	bool ret = (getTyp() == NodeType::div && isEnd()) ||
+			(getTyp() == NodeType::span && isEnd());
 	return ret;
 }
 
@@ -108,7 +123,6 @@ unsigned long Node::getOverallEnd()
 		return _nested.back().getLastPosition();
 	}
 }
-
 
 void Node::extractText(std::string &to, std::string &from)
 {

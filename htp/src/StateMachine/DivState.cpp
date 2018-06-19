@@ -10,35 +10,31 @@
 #include "HState.h"
 #include "PState.h"
 #include "AState.h"
+#include "IgnoredNTStates.h"
 
 DivState Div;
 
 IState *DivState::handleState(Context& ctx, std::list<Node>::iterator event)
 {
-	IState *state = &Div;
-
-	Node *emb = ctx.topOfStack()->embed(event);
-	if (event->getTyp() == NodeType::h) {
-		ctx.push(emb);
-		state = &H;
+	switch (event->getTyp()) {
+	case NodeType::h:
+		return pushAndChange(ctx, event, &H);
+	case NodeType::p:
+		return pushAndChange(ctx, event, &P);
+	case NodeType::a:
+		return pushAndChange(ctx, event, &A);
+	case NodeType::script:
+		return pushAndChange(ctx, event, &Script);
+	case NodeType::style:
+		return pushAndChange(ctx, event, &Style);
+	case NodeType::table:
+		return pushAndChange(ctx, event, &Table);
+	case NodeType::div:
+		if (event->isEnd())
+			return popAndChange(ctx, event);
+		else
+			return pushAndChange(ctx, event, &Div);
+	default:
+		return embedAndContinue(ctx, event);
 	}
-	if (event->getTyp() == NodeType::p) {
-		ctx.push(emb);
-		state = &P;
-	}
-	if (event->getTyp() == NodeType::a) {
-		ctx.push(emb);
-		state = &A;
-	}
-	if (event->getTyp() == NodeType::div) {
-		if (event->isEnd()) {
-			ctx.pop();
-			state = ctx.getStateFromNode(ctx.topOfStack());
-		} else {
-			// nested div
-			ctx.push(emb);
-		}
-	}
-	ctx.eraseDelayed(event);
-	return state;
 }
