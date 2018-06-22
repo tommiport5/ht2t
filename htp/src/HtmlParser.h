@@ -14,6 +14,7 @@
 
 #include "Node.h"
 #include "Filter.h"
+#include "HtmlReader.h"
 
 class HtmlParser {
 
@@ -36,6 +37,7 @@ class HtmlParser {
 
 	bool debug;
 
+	// should make these static or const
 	std::regex TagRegex;
 	std::regex EndRegex;
 	std::regex MetaRegex;
@@ -47,7 +49,7 @@ class HtmlParser {
 	std::ostream &out;
 
 public:
-	HtmlParser(std::istream &In, std::ostream &Out, bool Verb);
+	HtmlParser(HtmlReader &In, std::ostream &Out, bool Verb);
 	virtual ~HtmlParser();
 
 	std::string &readCharset();

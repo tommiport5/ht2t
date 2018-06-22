@@ -48,7 +48,8 @@ void processFile(struct dirent *dname, const string &dir, ostream &ros, bool ver
 	if (ext == ".html" || ext == ".htm") {
 		string ExtractedText;
 		ifstream tempi(dir + "/" + dname->d_name);
-		HtmlParser htp(tempi, ros, verb);
+		HtmlReader tempr(tempi);
+		HtmlParser htp(tempr, ros, verb);
 		if (verb) {
 			ros << htp.readCharset();
 			if (htp.convert2UTF_8()) ros << " converted to utf-8" << endl;
@@ -103,25 +104,28 @@ bool traverseDirectory(char* dname, ostream &ros, bool verb) {
 
 void useSingleFile(istream &ris, ostream &ros, bool verb) {
 	string ExtractedText;
-	HtmlParser htp(ris, ros, verb);
-	if (verb) {
-		ros << htp.readCharset();
-		if (htp.convert2UTF_8())
-			ros << " converted to utf-8" << endl;
-		else
-			ros << " could not convert to utf-8" << endl;
-	} else {
-		htp.convert2UTF_8();
-	}
-	htp.quickParse();
-	htp.structurize();
-	if (verb) {
-		htp.print();
-		htp.printET();
-	}
-	htp.startExtracting();
-	while (htp.getExtractedText(ExtractedText)) {
-		ros << ExtractedText;
+	HtmlReader ir(ris);
+	while (ir.moreFollows()) {
+		HtmlParser htp(ir, ros, verb);
+		if (verb) {
+			ros << htp.readCharset();
+			if (htp.convert2UTF_8())
+				ros << " converted to utf-8" << endl;
+			else
+				ros << " could not convert to utf-8" << endl;
+		} else {
+			htp.convert2UTF_8();
+		}
+		htp.quickParse();
+		htp.structurize();
+		if (verb) {
+			htp.print();
+			htp.printET();
+		}
+		htp.startExtracting();
+		while (htp.getExtractedText(ExtractedText)) {
+			ros << ExtractedText;
+		}
 	}
 }
 void usage(char *pname)

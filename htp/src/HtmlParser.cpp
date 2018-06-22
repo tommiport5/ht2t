@@ -40,7 +40,7 @@ inline bool emptyOrBlank(const std::string &s)
 }
 
 
-HtmlParser::HtmlParser(std::istream &In, std::ostream &Out, bool Verb)
+HtmlParser::HtmlParser(HtmlReader &In, std::ostream &Out, bool Verb)
 : debug(Verb)
 ,TagRegex("<\\s*(\\w*)[^>]*>")
 ,EndRegex("<\\s*/\\s*(\\w*)[^>]*>")
@@ -54,9 +54,10 @@ HtmlParser::HtmlParser(std::istream &In, std::ostream &Out, bool Verb)
 //	stringstream buffer;
 //	buffer << ifs.rdbuf();
 //	Buf = buffer.str();
-	while (!In.eof()) {
-		Buf += In.get();
-	}
+//	while (!In.eof()) {
+//		Buf += In.get();
+//	}
+	Buf = In.getBuffer();
 }
 
 /**
@@ -166,7 +167,7 @@ pair<unsigned long, unsigned long> HtmlParser::getRowCol(unsigned long pos)
 
 /**
  * structurize
- * Structurizes the 'Parsed' list, i.e. combines paragraphs with embedded elements and creates new nodes for untagged text in the body.
+ * Structurizes the 'Parsed' list, i.e. builds the tree of embedded nodes.
  *
  * Returns false, if no body can be found. Combining the paragraphs has been done by then.
  */
