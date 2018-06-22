@@ -1,0 +1,6 @@
+As always:
+
+./configure
+make
+sudo make install
+
