@@ -19,6 +19,7 @@ class Context;
 class IState {
 public:
 	virtual IState *handleState(Context &ctx, std::list<Node>::iterator event) = 0;
+	virtual ~IState() {};
 };
 
 // common operation for all states:

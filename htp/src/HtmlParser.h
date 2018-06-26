@@ -35,7 +35,7 @@ class HtmlParser {
 	std::list<Node *> NodeStack;
 	std::list<std::list<Node>::iterator> ToErase;
 
-	bool debug;
+	int debug;
 
 	// should make these static or const
 	std::regex TagRegex;
@@ -49,7 +49,7 @@ class HtmlParser {
 	std::ostream &out;
 
 public:
-	HtmlParser(HtmlReader &In, std::ostream &Out, bool Verb);
+	HtmlParser(HtmlReader &In, std::ostream &Out, int Verb);
 	virtual ~HtmlParser();
 
 	std::string &readCharset();

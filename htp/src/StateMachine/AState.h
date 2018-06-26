@@ -11,7 +11,9 @@
 #include "State.h"
 
 class AState: public State {
+public:
 	virtual IState *handleState(Context &ctx, std::list<Node>::iterator event);
+	virtual ~AState() {};
 };
 
 extern AState A;

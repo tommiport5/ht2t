@@ -12,7 +12,9 @@
 
 class DivState : public State
 {
+	public:
 	virtual IState *handleState(Context &ctx, std::list<Node>::iterator event);
+	virtual ~DivState() {};
 };
 
 extern DivState Div;

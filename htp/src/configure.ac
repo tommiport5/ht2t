@@ -4,8 +4,9 @@
 AC_PREREQ([2.69])
 AC_INIT([ht2t], [1.0.0])
 AM_INIT_AUTOMAKE
-AC_CONFIG_SRCDIR([HtmlReader.h])
+# AC_CONFIG_SRCDIR([HtmlReader.h])
 AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_FILES([Makefile])
 
 # Checks for programs.
 AC_PROG_CXX
@@ -24,6 +25,7 @@ AC_TYPE_SIZE_T
 # Checks for library functions.
 AC_CHECK_FUNCS([strtol])
 
-AC_CONFIG_FILES([Makefile])
+# Use C++ 14
+CXXFLAGS+=" -std=c++1y"
 
 AC_OUTPUT

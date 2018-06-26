@@ -11,7 +11,9 @@
 #include "State.h"
 
 class BodyState: public State {
+public:
 	virtual IState *handleState(Context &ctx, std::list<Node>::iterator event);
+	virtual ~BodyState() {};
 };
 
 extern BodyState Body;

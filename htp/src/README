@@ -1,6 +1,7 @@
 As always:
 
-./configure
+cd build
+../configure
 make
 sudo make install
 

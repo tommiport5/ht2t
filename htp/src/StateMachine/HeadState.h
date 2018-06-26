@@ -13,6 +13,7 @@
 class HeadState: public State {
 public:
 	virtual IState *handleState(Context &ctx, std::list<Node>::iterator event);
+	virtual ~HeadState() {};
 };
 
 extern HeadState Head;

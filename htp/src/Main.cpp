@@ -37,7 +37,7 @@ string findExt(const string name)
 		return bare;
 }
 
-void processFile(struct dirent *dname, const string &dir, ostream &ros, bool verb)
+void processFile(struct dirent *dname, const string &dir, ostream &ros, int verb)
 {
 	string ext = findExt(dname->d_name);
 	if (ext == ".js") return;
@@ -59,7 +59,10 @@ void processFile(struct dirent *dname, const string &dir, ostream &ros, bool ver
 		}
 		htp.quickParse();
 		htp.structurize();
-
+		if (verb) {
+			htp.print();
+			htp.printET();
+		}
 		htp.startExtracting();
 		while (htp.getExtractedText(ExtractedText)) {
 				ros << ExtractedText;
@@ -67,7 +70,7 @@ void processFile(struct dirent *dname, const string &dir, ostream &ros, bool ver
 	}
 }
 
-void traverse(DIR *p, const string &name, ostream &ros, bool verb)
+void traverse(DIR *p, const string &name, ostream &ros, int verb)
 {
  	struct dirent *pDirent;
 
@@ -90,7 +93,7 @@ void traverse(DIR *p, const string &name, ostream &ros, bool verb)
  	} while (pDirent);
 }
 
-bool traverseDirectory(char* dname, ostream &ros, bool verb) {
+bool traverseDirectory(char* dname, ostream &ros, int verb) {
 	DIR* pDir;
 	pDir = opendir(dname);
 	if (!pDir) {
@@ -102,7 +105,7 @@ bool traverseDirectory(char* dname, ostream &ros, bool verb) {
 	return true;
 }
 
-void useSingleFile(istream &ris, ostream &ros, bool verb) {
+void useSingleFile(istream &ris, ostream &ros, int verb) {
 	string ExtractedText;
 	HtmlReader ir(ris);
 	while (ir.moreFollows()) {
@@ -140,7 +143,7 @@ void usage(char *pname)
 }
 
 int main(int argc, char *argv[]) {
-	bool verbose = false;
+	int verbose = 0;
 	enum {file, directory} mode = file;
 	int opt = PATH_MAX;
 	char input_file[PATH_MAX] = "-";
@@ -161,7 +164,7 @@ int main(int argc, char *argv[]) {
 			strcpy(output_file, optarg);
 			break;
 		case 'v':
-			verbose = true;
+			++verbose;
 			break;
 		default:
 		case 'h':

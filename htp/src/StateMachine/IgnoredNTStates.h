@@ -14,6 +14,7 @@
 class IgnoredNTState: public State {
 public:
 	virtual IState *handleState(Context &ctx, std::list<Node>::iterator event);
+	virtual ~IgnoredNTState() {};
 protected:
 	NodeType nt;
 	IgnoredNTState(NodeType Nt) :nt(Nt) {};

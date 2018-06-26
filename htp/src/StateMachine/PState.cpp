@@ -33,6 +33,22 @@ IState *PState::handleState(Context& ctx, std::list<Node>::iterator event)
 			// state remains the same
 			return this;
 		}
+	case NodeType::div:
+		if (event->isEnd()) {
+			// </p> missing, we inert an artificial one
+			Node arti(*event);	// copy start position etc
+			arti.setLastPosition(arti.start());
+			// also set end marker and "" text
+			arti.makeEnd(true);
+			arti.setRaw("");
+			ctx.topOfStack()->embed(&arti);
+			ctx.pop();
+			// and then we process the </div> as usual
+			return popAndChange(ctx, event);
+		} else {
+			// nested div in p, normally invalid, but we accept it
+			return pushAndChange(ctx, event,&H);
+		}
 	case NodeType::h:
 		return pushAndChange(ctx, event,&H);
 	case NodeType::a:

@@ -10,6 +10,7 @@
 #include "IdleState.h"
 #include "DivState.h"
 #include "PState.h"
+#include "HState.h"
 #include "IgnoredNTStates.h"
 
 BodyState Body;
@@ -27,6 +28,8 @@ IState *BodyState::handleState(Context& ctx, std::list<Node>::iterator event)
 		return pushAndChange(ctx, event, &Div);
 	case NodeType::p:
 		return pushAndChange(ctx, event, &P);
+	case NodeType::h:
+		return pushAndChange(ctx, event, &H);
 	case NodeType::script:
 		return pushAndChange(ctx, event, &Script);
 	case NodeType::style:
