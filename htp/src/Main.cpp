@@ -13,6 +13,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include "HtmlParser.h"
+#include "version.h"
 
 #include "getopt.h"
 
@@ -131,15 +132,17 @@ void useSingleFile(istream &ris, ostream &ros, int verb) {
 		}
 	}
 }
+
 void usage(char *pname)
 {
+	cout << "\n" << pname << "\tHypertext to text converter (extractor), version " << ProgramVersion  << endl;
 	cout << "\nUse\t" << pname << "[-o <output file>] [-v]"  << endl;
 	cout << "or\t" << pname << " -f <input file> [-o <output file>] [-v]" << endl;
 	cout << "or\t" << pname << " -d <input directory> [-o <output file>] [-v]" << endl;
-	cout << "\nThe first version reads a single html stream from stdin." << endl;
-	cout << "The second version reads a single html stream from <input file>." << endl;
+	cout << "\nThe first version reads a html stream from stdin." << endl;
+	cout << "The second version reads a html stream from <input file>." << endl;
 	cout << "The third version traverses <input directory> and reads every file with extension .html or .htm ." << endl;
-	cout << "\nAll versions can optionally write to <output file> instead of stdout and add debug info to the output.\n" << endl;
+	cout << "\nAll versions can optionally write to <output file> instead of stdout and add debug info to the output (with -v, add v's for more detail)." << endl;
 }
 
 int main(int argc, char *argv[]) {
