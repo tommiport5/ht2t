@@ -15,8 +15,6 @@
 
 BodyState Body;
 
-//TODO event h ergänzen
-
 IState *BodyState::handleState(Context& ctx, std::list<Node>::iterator event)
 {
 	switch (event->getTyp()) {
