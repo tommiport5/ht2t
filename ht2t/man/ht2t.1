@@ -1,0 +1,55 @@
+.TH HT2T 1
+.SH NAME
+ht2t \- extract pure text from html files
+.SH SYNOPSIS
+.B ht2t
+[\fBoptions\fR]
+[\fB\-f\fR \fI<input_file>\fR | \fB-d \fI<input_directory>\fR]
+[\fB\-o\fR \fI<output_file>\fR]
+.SH DESCRIPTION
+.B ht2t
+Hypertext to text converter. The command parses an html file and outputs the textual content only in plain text format. 
+The output can be used for reading it with text-to-speech to visually impaired users or to postprocess it with text analysis software.
+.TP
+ht2t is designed to accept input from wget (either in a pipe, or, in case of wget -r, from a directory tree) and give output to espeak (see examples).
+.TP
+The input in case of \fB\-f\fR (or when using the standard input) may contain a sequence of web pages, which are processed separately and concatenated to the output.
+.TP
+The input is converted to UTF-8 before processing, if a meta-tag designating the charset ist present. Some character entities (&....;) are converted to UTF-8 too.
+.SH OPTIONS
+.TP
+.BR \fB\-f\fR " " \fI<input_file>\fR
+Process \fI<input_file>\fR. If none of \fB\-f\fR or \fB\-d\fR is present, standard input is used.
+.TP
+.BR \fB\-d\fR " " \fI<input_directory>\fR
+Process \fI<input_directory>\fR recursively. All files with the extensions .html and .htm are processed and concatenated to the output.
+.TP
+.BR \fB\-o\fR " " \fI<output_file>\fR
+If present, the output is written to \fI<output_file>\fR instead of stdout.
+.TP
+.BR \fB\-h\fR
+Prints a short usage instruction and exits.
+.TP
+.BR \fB\-v\fR
+Adds debugging information to the output. Up to three 'v' are possible to increase the amount of information. This can result in quite a lot of output!
+.SH EXAMPLES
+.PP
+This example reads the wikipedia entry about "Recitation":
+.PP
+wget -O - https://en.wikipedia.org/wiki/Recitation | ht2t | espeak -v english  -g5 -b1
+.PP
+The German article in a kind of German language:
+.PP
+wget -O - https://de.wikipedia.org/wiki/Rezitation | ht2t | espeak -v german-mbrola-3 -p65 -g5 -b1
+.SH AUTHOR
+.TP
+Written by Thomas Heckmann 
+.SH COPYRIGHT
+.PP
+Copyright © 2018 by the author. Under BSD license. 
+This is free software: you are free to change and redistribute it.  There is NO WARRANTY, to the extent permitted by law.
+.SH SEE ALSO
+.TP 
+\fBwget\fR(1), \fBespeak\fR(1)
+
+ 
