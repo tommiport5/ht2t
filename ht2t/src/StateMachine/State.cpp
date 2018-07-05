@@ -95,7 +95,7 @@ IState* Context::getStateFromNode(Node* cur)
 
 void Context::doErase(std::list<Node> prs)
 {
-	for_each(ToErase.begin(), ToErase.end(), [&prs] (auto p) {
+	for_each(ToErase.begin(), ToErase.end(), [&prs] (std::list<Node>::iterator p) {
 		prs.erase(p);
 	});
 	ToErase.clear();

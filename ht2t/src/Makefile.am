@@ -5,3 +5,4 @@ StateMachine/AState.cpp StateMachine/BodyState.cpp StateMachine/DivState.cpp Sta
 Filter.h HtmlParser.h HtmlReader.h Node.h NodeType.h version.h \
 StateMachine/AState.h StateMachine/BodyState.h StateMachine/DivState.h StateMachine/HeadState.h StateMachine/HState.h StateMachine/IdleState.h StateMachine/IgnoredNTStates.h StateMachine/PState.h StateMachine/State.h
 dist_man_MANS = man/ht2t.1
+EXTRA_DIST = automake.sh
