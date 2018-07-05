@@ -5,12 +5,15 @@
  *      Author: Heckmann
  */
 
+#include "config.h"
 #include "HtmlParser.h"
 #include <limits>
 #include <cctype>
 #include <iostream>
 #include <algorithm>
+#ifdef HAVE_ICONV_H
 #include <iconv.h>
+#endif
 
 #include "StateMachine/State.h"
 #include "StateMachine/IdleState.h"
@@ -42,8 +45,8 @@ inline bool emptyOrBlank(const std::string &s)
 
 HtmlParser::HtmlParser(HtmlReader &In, std::ostream &Out, int Verb)
 : debug(Verb)
-,TagRegex("<\\s*(\\w*)[^>]*>")
-,EndRegex("<\\s*/\\s*(\\w*)[^>]*>")
+,TagRegex("<\\s*(\\w*)[^>]*>", regex_constants::ECMAScript | regex_constants::icase)
+,EndRegex("<\\s*/\\s*(\\w*)[^>]*>", regex_constants::ECMAScript | regex_constants::icase)
 ,MetaRegex("<\\s*(meta)\\s*[^>]*>", regex_constants::ECMAScript | regex_constants::icase)
 ,CommentRegex("<\\s*(!--)[^>]*>", regex_constants::ECMAScript | regex_constants::icase)
 ,InputCharset("")
@@ -101,6 +104,7 @@ std::string &HtmlParser::readCharset()
 
 bool HtmlParser::convert2UTF_8()
 {
+#ifdef HAVE_ICONV_H
 	iconv_t idesc;
 	size_t InLen = Buf.length();
 	size_t OutLen = 2*InLen;	// should be enough
@@ -125,6 +129,9 @@ bool HtmlParser::convert2UTF_8()
 	delete []saveTo;
 	iconv_close(idesc);
 	return res != (size_t) -1;
+#else
+	return false;
+#endif
 }
 
 

@@ -6,6 +6,7 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
+#include "config.h"
 #include <iostream>
 #include <typeinfo>
 #include <cstdio>
@@ -39,6 +40,22 @@ string findExt(const string name)
 		return bare;
 }
 
+void convert2UTF_8(int verb, ostream& ros, HtmlParser& htp) {
+#ifdef HAVE_ICONV_H
+	if (verb) {
+		ros << htp.readCharset();
+		if (htp.convert2UTF_8())
+			ros << " converted to utf-8" << endl;
+		else
+			ros << " could not be converted to utf-8" << endl;
+	} else {
+		htp.convert2UTF_8();
+	}
+#else
+	ros << htp.readCharset() << " could not be converted to utf-8, because iconv is missing";
+#endif
+}
+
 void processFile(struct dirent *dname, const string &dir, ostream &ros, int verb)
 {
 	string ext = findExt(dname->d_name);
@@ -52,13 +69,7 @@ void processFile(struct dirent *dname, const string &dir, ostream &ros, int verb
 		ifstream tempi(dir + "/" + dname->d_name);
 		HtmlReader tempr(tempi);
 		HtmlParser htp(tempr, ros, verb);
-		if (verb) {
-			ros << htp.readCharset();
-			if (htp.convert2UTF_8()) ros << " converted to utf-8" << endl;
-			else ros << " could not convert to utf-8" << endl;
-		} else {
-			htp.convert2UTF_8();
-		}
+		convert2UTF_8(verb, ros, htp);
 		htp.quickParse();
 		htp.structurize();
 		if (verb) {
@@ -109,28 +120,27 @@ bool traverseDirectory(char* dname, ostream &ros, int verb) {
 
 void useSingleFile(istream &ris, ostream &ros, int verb) {
 	string ExtractedText;
-	HtmlReader ir(ris);
-	while (ir.moreFollows()) {
-		HtmlParser htp(ir, ros, verb);
-		if (verb) {
-			ros << htp.readCharset();
-			if (htp.convert2UTF_8())
-				ros << " converted to utf-8" << endl;
-			else
-				ros << " could not convert to utf-8" << endl;
-		} else {
-			htp.convert2UTF_8();
+	try {
+		HtmlReader ir(ris);
+		while (ir.moreFollows()) {
+			HtmlParser htp(ir, ros, verb);
+			convert2UTF_8(verb, ros, htp);
+			htp.quickParse();
+			htp.structurize();
+			if (verb) {
+				htp.print();
+				htp.printET();
+			}
+			htp.startExtracting();
+			while (htp.getExtractedText(ExtractedText)) {
+				ros << ExtractedText;
+			}
 		}
-		htp.quickParse();
-		htp.structurize();
-		if (verb) {
-			htp.print();
-			htp.printET();
-		}
-		htp.startExtracting();
-		while (htp.getExtractedText(ExtractedText)) {
-			ros << ExtractedText;
-		}
+	} catch (regex_error &e) {
+		cerr << "ht2ts caught regex_error: 0x" << hex << e.code()<< endl;
+		cerr << "This is most probably due to a too old g++ (<= 4.8) or libstdc++" << endl;
+	} catch (exception &e) {
+		cerr << "ht2t::useSingleFile caught exception: \"" << e.what() << "\"" << endl;
 	}
 }
 

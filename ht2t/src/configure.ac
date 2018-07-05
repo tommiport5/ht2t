@@ -16,6 +16,7 @@ AC_PROG_CC
 
 # Checks for header files.
 AC_CHECK_HEADERS([unistd.h])
+AC_CHECK_HEADERS([iconv.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
