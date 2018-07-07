@@ -4,7 +4,7 @@
 # autoconf
 # autoheader
 # automake --add-missing
-mkdir build
+# mkdir build
 cd build
 ../configure
 make

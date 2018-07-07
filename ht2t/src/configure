@@ -4700,6 +4700,18 @@ fi
 
 done
 
+for ac_header in iconv.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "iconv.h" "ac_cv_header_iconv_h" "$ac_includes_default"
+if test "x$ac_cv_header_iconv_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_ICONV_H 1
+_ACEOF
+
+fi
+
+done
+
 
 # Checks for typedefs, structures, and compiler characteristics.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for stdbool.h that conforms to C99" >&5

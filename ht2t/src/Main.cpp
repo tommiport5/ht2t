@@ -15,7 +15,6 @@
 #include <dirent.h>
 #include <unistd.h>
 #include "HtmlParser.h"
-#include "version.h"
 
 #include "getopt.h"
 
@@ -146,7 +145,7 @@ void useSingleFile(istream &ris, ostream &ros, int verb) {
 
 void usage(char *pname)
 {
-	cout << "\n" << pname << "\tHypertext to text converter (extractor), version " << ProgramVersion  << endl;
+	cout << "\n" << pname << "\tHypertext to text converter (extractor), version " << VERSION  << endl;
 	cout << "\nUse\t" << pname << "[-o <output file>] [-v]"  << endl;
 	cout << "or\t" << pname << " -f <input file> [-o <output file>] [-v]" << endl;
 	cout << "or\t" << pname << " -d <input directory> [-o <output file>] [-v]" << endl;
