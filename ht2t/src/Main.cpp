@@ -9,6 +9,7 @@
 #include "config.h"
 #include <iostream>
 #include <typeinfo>
+#include <string>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -109,7 +110,7 @@ bool traverseDirectory(char* dname, ostream &ros, int verb) {
 	DIR* pDir;
 	pDir = opendir(dname);
 	if (!pDir) {
-		cerr << "Could not open directory " << dname[1] << endl;
+		cerr << "Could not open directory " << dname << endl;
 		return false;
 	}
 	traverse(pDir, dname, ros, verb);
