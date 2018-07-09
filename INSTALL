@@ -1,0 +1,13 @@
+Quick Installation
+==================
+
+	cd src
+	./automake.sh
+	
+	This will install the tool and man page. It uses a "build" directory
+for the temporary files to keep the source directory clean.
+
+	It uses 'sudo' for make install, so you will be asked for you password
+during execution.
+
+
